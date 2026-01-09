@@ -73,6 +73,7 @@ public class TestHeritage {
         assertThat(utilisateurs).isNotNull();
         assertThat(utilisateurs).isNotEmpty();
         assertThat(utilisateurs.size()).isEqualTo(3);
+        assertThat(utilisateurs).hasSize(3);
         log.info(utilisateurs.toString());
     }
 
