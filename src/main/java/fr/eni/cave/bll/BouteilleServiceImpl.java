@@ -3,6 +3,7 @@ package fr.eni.cave.bll;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import fr.eni.cave.bo.vin.Bouteille;
@@ -95,7 +96,7 @@ public class BouteilleServiceImpl implements BouteilleService {
 		if (bouteille == null) {
 			throw new RuntimeException("Bouteille est obligatoire");
 		}
-		validerBouteille(bouteille);
+		validerCreationBouteille(bouteille);
 		try {
 			final Bouteille bDB = bRepository.save(bouteille);
 			return bDB;
@@ -103,6 +104,18 @@ public class BouteilleServiceImpl implements BouteilleService {
 			throw new RuntimeException("Impossible de sauver - " + bouteille.toString());
 		}
 	}
+
+    @Override
+    public Bouteille modifier(Bouteille bouteille) {
+
+        validerModificationBouteille(bouteille);
+        try {
+            final Bouteille bDB = bRepository.save(bouteille);
+            return bDB;
+        } catch (Exception e) {
+            throw new RuntimeException("Impossible de sauver - " + bouteille.toString());
+        }
+    }
 
 	@Override
 	public void supprimer(int idBouteille) {
@@ -116,7 +129,7 @@ public class BouteilleServiceImpl implements BouteilleService {
 		}
 	}
 
-	private void validerBouteille(Bouteille bouteille) {
+	private void validerCreationBouteille(Bouteille bouteille) {
 		if (bouteille == null) {
 			throw new RuntimeException("Bouteille est obligatoire");
 		}
@@ -153,6 +166,51 @@ public class BouteilleServiceImpl implements BouteilleService {
 		bouteille.setRegion(rDB);
 		bouteille.setCouleur(cDB);
 	}
+
+
+    private void validerModificationBouteille(Bouteille bouteille) {
+        if (bouteille == null) {
+            throw new RuntimeException("Bouteille est obligatoire");
+        }
+
+        if (bouteille.getRegion() == null) {
+            throw new RuntimeException("Région est obligatoire");
+        }
+
+        if (bouteille.getCouleur() == null) {
+            throw new RuntimeException("Couleur est obligatoire");
+        }
+
+        final Region rDB = validerRegion(bouteille.getRegion().getId());
+        final Couleur cDB = validerCouleur(bouteille.getCouleur().getId());
+
+        // Valider que le nom n'est pas nule ou vide
+        validerChaineNonNulle(bouteille.getNom(), "Le nom n'a pas été renseigné");
+
+        Optional<Bouteille> optionalBouteille = bRepository.findById(bouteille.getId());
+        if (optionalBouteille.isEmpty()) {
+            throw new RuntimeException("La bouteille à modifier n'existe pas");
+        }
+
+        // Appel de la méthode de requête spécifique : findByNom
+        final Bouteille bDB = bRepository.findByNom(bouteille.getNom());
+        if (bDB != null && !bDB.getId().equals(bouteille.getId()) ) {
+            throw new RuntimeException("Le nom doit être unique");
+        }
+
+        if (bouteille.getQuantite() <= 0) {
+            throw new RuntimeException("Le nombre de bouteilles doit être positif");
+        }
+
+        if (bouteille.getPrix() <= 0) {
+            throw new RuntimeException("Le prix doit être positif");
+        }
+
+        // associer la Region et la Couleur de la base à la Bouteille
+        bouteille.setRegion(rDB);
+        bouteille.setCouleur(cDB);
+    }
+
 
 	private void validerChaineNonNulle(String chaine, String msgErreur) {
 		if (chaine == null || chaine.isBlank())
