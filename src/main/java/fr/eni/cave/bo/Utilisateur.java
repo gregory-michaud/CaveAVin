@@ -31,4 +31,7 @@ public class Utilisateur {
     @Column(name = "FIRST_NAME", nullable = false, length = 150)
     private String prenom;
 
+    @Column(length = 15)
+    private String authority;
+
 }
