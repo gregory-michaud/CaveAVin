@@ -95,7 +95,21 @@ public class BouteilleServiceImpl implements BouteilleService {
 		if (bouteille == null) {
 			throw new RuntimeException("Bouteille est obligatoire");
 		}
-		validerBouteille(bouteille);
+		validerCreationBouteille(bouteille);
+		try {
+			final Bouteille bDB = bRepository.save(bouteille);
+			return bDB;
+		} catch (Exception e) {
+			throw new RuntimeException("Impossible de sauver - " + bouteille.toString());
+		}
+	}
+
+	@Override
+	public Bouteille modifier(Bouteille bouteille) {
+		if (bouteille == null) {
+			throw new RuntimeException("Bouteille est obligatoire");
+		}
+		validerModificationBouteille(bouteille);
 		try {
 			final Bouteille bDB = bRepository.save(bouteille);
 			return bDB;
@@ -134,12 +148,6 @@ public class BouteilleServiceImpl implements BouteilleService {
 
 		// Valider que le nom n'est pas nule ou vide
 		validerChaineNonNulle(bouteille.getNom(), "Le nom n'a pas été renseigné");
-		// nom doit être unique
-		// Appel de la méthode de requête spécifique : findByNom
-		final Bouteille bDB = bRepository.findByNom(bouteille.getNom());
-		if (bDB != null) {
-			throw new RuntimeException("Le nom doit être unique");
-		}
 
 		if (bouteille.getQuantite() <= 0) {
 			throw new RuntimeException("Le nombre de bouteilles doit être positif");
@@ -152,6 +160,29 @@ public class BouteilleServiceImpl implements BouteilleService {
 		// associer la Region et la Couleur de la base à la Bouteille
 		bouteille.setRegion(rDB);
 		bouteille.setCouleur(cDB);
+	}
+
+	private void validerCreationBouteille(Bouteille bouteille) {
+		validerBouteille(bouteille);
+		// nom doit être unique
+		// Appel de la méthode de requête spécifique : findByNom
+		final Bouteille bDB = bRepository.findByNom(bouteille.getNom());
+		if (bDB != null) {
+			throw new RuntimeException("Le nom doit être unique");
+		}
+
+
+	}
+
+
+	private void validerModificationBouteille(Bouteille bouteille) {
+		validerBouteille(bouteille);
+		// nom doit être unique
+		// Appel de la méthode de requête spécifique : findByNom
+		final Bouteille bDB = bRepository.findByNom(bouteille.getNom());
+		if (bDB != null && !bDB.getId().equals(bouteille.getId())) {
+			throw new RuntimeException("Le nom doit être unique");
+		}
 	}
 
 	private void validerChaineNonNulle(String chaine, String msgErreur) {

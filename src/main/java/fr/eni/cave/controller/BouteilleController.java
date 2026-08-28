@@ -5,10 +5,7 @@ import fr.eni.cave.bo.vin.Bouteille;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,8 +36,8 @@ public class BouteilleController {
         // caractères par défaut
         // Il vaut mieux gérer les exceptions des données dans la méthode
         try{
-            int id = Integer.parseInt(idInPath);
-            Bouteille bouteille = bService.chargerBouteilleParId(id);
+            final int id = Integer.parseInt(idInPath);
+            final Bouteille bouteille = bService.chargerBouteilleParId(id);
             return ResponseEntity.ok(bouteille);
         }catch(NumberFormatException e){
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
@@ -50,8 +47,8 @@ public class BouteilleController {
     @GetMapping("/region/{id}")
     public ResponseEntity<?> rechercherBouteillesParRegion(@PathVariable("id") String idInPath) {
         try{
-            int idRegion = Integer.parseInt(idInPath);
-            List<Bouteille> bouteilles = bService.chargerBouteillesParRegion(idRegion);
+            final int idRegion = Integer.parseInt(idInPath);
+            final List<Bouteille> bouteilles = bService.chargerBouteillesParRegion(idRegion);
             return ResponseEntity.ok(bouteilles);
         }catch(NumberFormatException e){
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
@@ -61,11 +58,50 @@ public class BouteilleController {
     @GetMapping("/couleur/{id}")
     public ResponseEntity<?> rechercherBouteillesParCouleur(@PathVariable("id") String idInPath) {
         try{
-            int idCouleur = Integer.parseInt(idInPath);
-            List<Bouteille> bouteilles = bService.chargerBouteillesParCouleur(idCouleur);
+            final int idCouleur = Integer.parseInt(idInPath);
+            final List<Bouteille> bouteilles = bService.chargerBouteillesParCouleur(idCouleur);
             return ResponseEntity.ok(bouteilles);
         }catch(NumberFormatException e){
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
         }
     }
-}
+
+    @PostMapping
+    public ResponseEntity<?> ajoutBouteille(@RequestBody Bouteille bouteille){
+
+        try{
+            bService.ajouter(bouteille);
+            return ResponseEntity.ok(bouteille);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+        }
+
+    }
+
+    @PutMapping
+    public ResponseEntity<?> miseAJourBouteille(@RequestBody Bouteille bouteille){
+        try{
+            if(bouteille == null || bouteille.getId() == null || bouteille.getId() <= 0){
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("La bouteille et l'identifiant sont obligatoires");
+            }
+            bService.modifier(bouteille);
+            return ResponseEntity.ok(bouteille);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+        }
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteBouteille(@PathVariable("id") String idInPath){
+        try{
+            final int idBouteille = Integer.parseInt(idInPath);
+            bService.supprimer(idBouteille);
+            return ResponseEntity.ok("Bouteille ("+ idBouteille+") est supprimée");
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+        }
+    }
+ }
