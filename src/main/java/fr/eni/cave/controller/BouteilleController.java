@@ -3,8 +3,10 @@ package fr.eni.cave.controller;
 import fr.eni.cave.bll.BouteilleService;
 import fr.eni.cave.bo.vin.Bouteille;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,5 +31,41 @@ public class BouteilleController {
         // Statut 200 : OK + dans le body bouteilles
         // Le contenu du body est directement injecté dans la méthode ok
         return ResponseEntity.ok(bouteilles);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> rechercherBouteilleParId(@PathVariable("id") String idInPath) {
+        // Toutes les données transmises par le protocole HTTP sont des chaines de
+        // caractères par défaut
+        // Il vaut mieux gérer les exceptions des données dans la méthode
+        try{
+            int id = Integer.parseInt(idInPath);
+            Bouteille bouteille = bService.chargerBouteilleParId(id);
+            return ResponseEntity.ok(bouteille);
+        }catch(NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
+        }
+    }
+
+    @GetMapping("/region/{id}")
+    public ResponseEntity<?> rechercherBouteillesParRegion(@PathVariable("id") String idInPath) {
+        try{
+            int idRegion = Integer.parseInt(idInPath);
+            List<Bouteille> bouteilles = bService.chargerBouteillesParRegion(idRegion);
+            return ResponseEntity.ok(bouteilles);
+        }catch(NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
+        }
+    }
+
+    @GetMapping("/couleur/{id}")
+    public ResponseEntity<?> rechercherBouteillesParCouleur(@PathVariable("id") String idInPath) {
+        try{
+            int idCouleur = Integer.parseInt(idInPath);
+            List<Bouteille> bouteilles = bService.chargerBouteillesParCouleur(idCouleur);
+            return ResponseEntity.ok(bouteilles);
+        }catch(NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Votre identifiant n'est pas un entier");
+        }
     }
 }
